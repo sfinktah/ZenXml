@@ -1,0 +1,533 @@
+<style>
+.fragment {
+    white-space: pre;
+    font-family: monospace;
+    border: 1px dashed gray;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    display: block;
+    width: 100em;
+    margin-left: 4em;
+    padding: 1em;
+    line-height: 1em;
+}
+</style>
+<body>
+<div class="contents">
+<div class="textblock"><ul>
+<li><a class="el" href="index.html#sec_Rationale">Rationale</a> </li>
+<li><a class="el" href="index.html#sec_Quick_Start">Quick Start</a> </li>
+<li><a class="el" href="index.html#sec_Supported_Platforms">Supported Platforms</a> </li>
+<li><a class="el" href="index.html#sec_Flexible_Programming_Model">Flexible Programming Model</a> </li>
+<li><a class="el" href="index.html#sec_Structured_XML_element_access">Structured XML element access</a> </li>
+<li><a class="el" href="index.html#sec_Access_XML_attributes">Access XML attributes</a> </li>
+<li><a class="el" href="index.html#sec_Automatic_conversion_built_in">Automatic conversion for built-in arithmetic types</a> </li>
+<li><a class="el" href="index.html#sec_Automatic_conversion_string">Automatic conversion for string-like types</a> </li>
+<li><a class="el" href="index.html#sec_Automatic_conversion_STL">Automatic conversion for STL container types</a> </li>
+<li><a class="el" href="index.html#sec_Support_user_defined">Support for user-defined types</a> </li>
+<li><a class="el" href="index.html#sec_Structured_user_types">Structured user types</a> </li>
+<li><a class="el" href="index.html#sec_Type_Safety">Type Safety</a></li>
+</ul>
+<h1><a class="anchor" id="sec_Rationale"></a>
+Rationale</h1>
+<p>zen::Xml is an XML library serializing structured user data in a convenient way. Using compile-time information gathered by techniques of template metaprogramming it minimizes the manual overhead required and frees the user from implementing fundamental type conversions by himself. Basic data types such as</p><ul>
+<li><b>all</b> built-in arithmetic numbers,</li>
+<li><b>all</b> kinds of string classes and "string-like" types,</li>
+<li><b>all</b> types defined as STL containers</li>
+</ul>
+<p>are handled automatically. Thereby a large number of recurring problems is solved by the library:</p><ul>
+<li>generic number to string conversions</li>
+<li>generic char to wchar_t conversions (UTF) for custom string classes in a platform independent manner</li>
+<li>serialization of arbitrary STL container types</li>
+<li>simple integration: header-only, no extra dependencies, fully portable</li>
+<li>support arbitrary string classes everywhere: for file names, XML element names, attribute names, values, ...</li>
+<li>XML library built on C++14 with focus on elegance, minimal code size, flexibility and performance</li>
+<li>easily extensible API: allow for internationalization, fine-granular error handling, and custom file I/O</li>
+</ul>
+<p>The design follows the philosophy of the Loki library: <br>
+<a href="http://loki-lib.sourceforge.net/index.php?n=Main.Philosophy">http://loki-lib.sourceforge.net/index.php?n=Main.Philosophy</a></p>
+<h1><a class="anchor" id="sec_Quick_Start"></a>
+Quick Start</h1>
+<p>1. Download zen::Xml: <a href="http://sourceforge.net/projects/zenxml">http://sourceforge.net/projects/zenxml</a></p>
+<p>2. Setup one of the following preprocessor macros for your project to identify the platform (this is only required if you use C-stream-based file IO) </p><div class="fragment"><div class="line">ZEN_WIN</div>
+<div class="line">ZEN_LINUX   </div>
+<div class="line">ZEN_MAC</div>
+</div><!-- fragment --><p>3. For optimal performance define this global macro in release build: (following convention of the <code>assert</code> macro) </p><div class="fragment"><div class="line">NDEBUG</div>
+</div><!-- fragment --><p>4. Include the main header: </p><div class="fragment"><div class="line"><span class="preprocessor">#include &lt;zenxml/xml.h&gt;</span></div>
+</div><!-- fragment --><p>5. Start serializing user data:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">size_t</span> a = 10;</div>
+<div class="line"><span class="keywordtype">double</span> b = 2.0;</div>
+<div class="line"><span class="keywordtype">int</span>    c = -1;</div>
+</div><!-- fragment --><div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc; <span class="comment">//empty XML document</span></div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc); <span class="comment">//the simplest way to fill the document is to use a data output proxy</span></div>
+<div class="line">out[<span class="stringliteral">"elem1"</span>](a); <span class="comment">//</span></div>
+<div class="line">out[<span class="stringliteral">"elem2"</span>](b); <span class="comment">//map data types to XML elements</span></div>
+<div class="line">out[<span class="stringliteral">"elem3"</span>](c); <span class="comment">//</span></div>
+<div class="line"></div>
+<div class="line"><span class="keywordflow">try</span></div>
+<div class="line">{</div>
+<div class="line">    <a class="code" href="namespacezen.html#adeeb6b2318097382ae47aa939fc15d4d">save</a>(doc, <span class="stringliteral">"file.xml"</span>); <span class="comment">//throw zen::XmlFileError</span></div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">catch</span> (<span class="keyword">const</span> <a class="code" href="structzen_1_1_xml_file_error.html">zen::XmlFileError</a>&amp; e) { <span class="comment">/* handle error */</span> }</div>
+</div><!-- fragment --><p>The following XML file will be created: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;elem1&gt;10&lt;/elem1&gt;
+    &lt;elem2&gt;2.000000&lt;/elem2&gt;
+    &lt;elem3&gt;-1&lt;/elem3&gt;
+&lt;/Root&gt;
+</pre><p>Load an XML file and map its content to user data: </p><div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc; <span class="comment">//empty XML document</span></div>
+<div class="line"></div>
+<div class="line"><span class="keywordflow">try</span></div>
+<div class="line">{</div>
+<div class="line">    doc = <a class="code" href="namespacezen.html#a872a48c0616e7f12ae8caca464835e00">load</a>(<span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError, XmlParsingError</span></div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">catch</span> (<span class="keyword">const</span> <a class="code" href="structzen_1_1_xml_error.html">zen::XmlError</a>&amp; e) { <span class="comment">/* handle error */</span> }</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_in.html">zen::XmlIn</a> in(doc); <span class="comment">//the simplest way to read the document is to use a data input proxy</span></div>
+<div class="line">in[<span class="stringliteral">"elem1"</span>](a); <span class="comment">//</span></div>
+<div class="line">in[<span class="stringliteral">"elem2"</span>](b); <span class="comment">//map XML elements into user data</span></div>
+<div class="line">in[<span class="stringliteral">"elem3"</span>](c); <span class="comment">//</span></div>
+<div class="line"></div>
+<div class="line"><span class="comment">//check for mapping errors, i.e. missing elements or conversion errors: you may consider these as warnings only</span></div>
+<div class="line"><span class="keywordflow">if</span> (in.errorsOccured())</div>
+<div class="line">{</div>
+<div class="line">   std::vector&lt;std::wstring&gt; failedElements = in.getErrorsAs&lt;std::wstring&gt;();</div>
+<div class="line">   <span class="comment">/* generate error message showing the XML element names that failed to convert */</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><h1><a class="anchor" id="sec_Supported_Platforms"></a>
+Supported Platforms</h1>
+<p>zen::Xml is written in a platform independent manner and runs on any C++14-compliant compiler, e.g. Microsoft Visual C++, MinGW (Windows) and GCC, Clang (Linux and macOS).</p>
+<p><b>Note:</b> In order to enable C++14 features in GCC it is required to specify either of the following compiler options: </p><pre class="fragment">-std=c++14
+-std=gnu++14
+</pre><h1><a class="anchor" id="sec_Flexible_Programming_Model"></a>
+Flexible Programming Model</h1>
+<p>Depending on what granularity of control is required in a particular application, zen::Xml allows the user to choose between full control or simplicity. <br>
+<br>
+The library is structured into the following parts, each of which can be used in isolation: <br>
+<br>
+<b>&lt;File&gt;</b> <br>
+|<br>
+| <a class="el" href="io_8h_source.html" title="Save and load byte streams from files. ">io.h</a><br>
+|<br>
+<b>&lt;Byte Stream&gt;</b><br>
+|<br>
+| <a class="el" href="parser_8h_source.html" title="Convert an XML document object model (class XmlDoc) to and from a byte stream representation. ">parser.h</a><br>
+|<br>
+<b>&lt;Document Object Model&gt;</b><br>
+|<br>
+| <a class="el" href="bind_8h_source.html" title="Map user data types to XML. ">bind.h</a><br>
+|<br>
+<b>&lt;C++ user data&gt;</b> <br>
+<br>
+</p><ul>
+<li>Save an XML document to memory <div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc;</div>
+<div class="line">    ... <span class="comment">//fill it</span></div>
+<div class="line">std::string stream = <a class="code" href="namespacezen.html#afaa4920e275078e6c8009fbdf58b57ee">serialize</a>(doc); <span class="comment">//throw ()</span></div>
+<div class="line"><span class="comment">/* you now have a binary XML stream */</span></div>
+<div class="line"></div>
+<div class="line"><a class="code" href="namespacezen.html#a4ba7bbaa14a787b07fc13da9145aabe2">saveStream</a>(stream, <span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError</span></div>
+<div class="line"><span class="comment">//if all you need is to store XmlDoc in a file direcly you can use zen::save() instead</span></div>
+</div><!-- fragment --></li>
+<li>Load XML document from memory <div class="fragment"><div class="line"><span class="comment">//get XML byte stream:</span></div>
+<div class="line">std::string stream = <a class="code" href="namespacezen.html#a04fe23c3bd9b7d03309620b5ea763607">loadStream</a>(<span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError</span></div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc;</div>
+<div class="line"><span class="comment">//parse byte stream into an XML document:</span></div>
+<div class="line"><a class="code" href="namespacezen.html#a1ae1a4688d724b554fe3bf4638700477">parse</a>(stream, doc); <span class="comment">//throw XmlParsingError</span></div>
+<div class="line"><span class="comment">//if all you need is to load an XmlDoc from a file you can use zen::load() directly</span></div>
+</div><!-- fragment --></li>
+<li>Fine-granular error checking with the data input proxy <div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_in.html">zen::XmlIn</a> in(doc);</div>
+<div class="line"><span class="comment">//map XML elements into user data</span></div>
+<div class="line"><span class="keywordflow">if</span> (!in[<span class="stringliteral">"elem1"</span>](a))</div>
+<div class="line">   <span class="keywordflow">throw</span> MyCustomException();</div>
+<div class="line"><span class="keywordflow">if</span> (!in[<span class="stringliteral">"elem2"</span>](b))</div>
+<div class="line">   <span class="keywordflow">throw</span> MyCustomException();</div>
+<div class="line"><span class="keywordflow">if</span> (!in[<span class="stringliteral">"elem3"</span>](c))</div>
+<div class="line">   <span class="keywordflow">throw</span> MyCustomException();</div>
+<div class="line"></div>
+<div class="line"><span class="comment">//if (in.errorsOccured()) ...  &lt;- not required here: contains the same conversion errors checked manually before</span></div>
+</div><!-- fragment --></li>
+<li>Access the Document Object Model directly (without input/output proxy) <br>
+<br>
+The full power of type conversions which is available via the input/output proxy classes <a class="el" href="classzen_1_1_xml_in.html" title="Proxy class to conveniently convert XML structure to user data. ">zen::XmlIn</a> and <a class="el" href="classzen_1_1_xml_out.html" title="Proxy class to conveniently convert user data into XML structure. ">zen::XmlOut</a> is also available for the document object model! <div class="fragment"><div class="line"><span class="keyword">using namespace </span><a class="code" href="namespacezen.html">zen</a>;</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_doc.html">XmlDoc</a> doc;</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_element.html">XmlElement</a>&amp; child = doc.<a class="code" href="classzen_1_1_xml_doc.html#ad4a9594d93885fc1a12db28e8246648d">root</a>().<a class="code" href="classzen_1_1_xml_element.html#a653caffa6fad89db7d14f67f987ad0f9">addChild</a>(<span class="stringliteral">"elem1"</span>);</div>
+<div class="line">child.<a class="code" href="classzen_1_1_xml_element.html#aaf3a26f6199fc88cce7d9d911ba21b01">setValue</a>(1234);</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="namespacezen.html#adeeb6b2318097382ae47aa939fc15d4d">save</a>(doc, <span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError</span></div>
+</div><!-- fragment --> <br>
+<div class="fragment"><div class="line"><span class="keyword">using namespace </span><a class="code" href="namespacezen.html">zen</a>;</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_doc.html">XmlDoc</a> doc = <a class="code" href="namespacezen.html#a872a48c0616e7f12ae8caca464835e00">load</a>(<span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError, XmlParsingError</span></div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_element.html">XmlElement</a>* child = doc.<a class="code" href="classzen_1_1_xml_doc.html#ad4a9594d93885fc1a12db28e8246648d">root</a>().<a class="code" href="classzen_1_1_xml_element.html#a3ab82b1720460487f4afabcd115d0c7e">getChild</a>(<span class="stringliteral">"elem1"</span>);</div>
+<div class="line"><span class="keywordflow">if</span> (child)</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordtype">int</span> value = -1;</div>
+<div class="line">    <span class="keywordflow">if</span> (!child-&gt;<a class="code" href="classzen_1_1_xml_element.html#a5ac9d586a5668c2c64e3c06c6203b070">getValue</a>(value))</div>
+<div class="line">        ... <span class="comment">//handle conversion error</span></div>
+<div class="line">}</div>
+<div class="line"><span class="keywordflow">else</span></div>
+<div class="line">    ... <span class="comment">//XML element not found</span></div>
+</div><!-- fragment --></li>
+</ul>
+<h1><a class="anchor" id="sec_Structured_XML_element_access"></a>
+Structured XML element access</h1>
+<div class="fragment"><div class="line"><span class="comment">//write a value into one deeply nested XML element - note the different types used seamlessly: char[], wchar_t[], char, wchar_t, int</span></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line">out[<span class="stringliteral">"elemento1"</span>][L<span class="stringliteral">"элемент2"</span>][L<span class="stringliteral">"要素3"</span>][L<span class="stringliteral">"στοιχείο4"</span>][<span class="stringliteral">"elem5"</span>][L<span class="stringliteral">"元素6"</span>][L<span class="stringliteral">'元'</span>][<span class="charliteral">'z'</span>](-1234);</div>
+</div><!-- fragment --><p>The resulting XML: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;elemento1&gt;
+        &lt;элемент2&gt;
+            &lt;要素3&gt;
+                &lt;στοιχείο4&gt;
+                    &lt;elem5&gt;
+                        &lt;元素6&gt;
+                            &lt;元&gt;
+                                &lt;z&gt;-1234&lt;/z&gt;
+                            &lt;/元&gt;
+                        &lt;/元素6&gt;
+                    &lt;/elem5&gt;
+                &lt;/στοιχείο4&gt;
+            &lt;/要素3&gt;
+        &lt;/элемент2&gt;
+    &lt;/elemento1&gt;
+&lt;/Root&gt;
+</pre><h1><a class="anchor" id="sec_Access_XML_attributes"></a>
+Access XML attributes</h1>
+<div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc;</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line">out[<span class="stringliteral">"elem"</span>].attribute(<span class="stringliteral">"attr1"</span>,   -1); <span class="comment">//</span></div>
+<div class="line">out[<span class="stringliteral">"elem"</span>].attribute(<span class="stringliteral">"attr2"</span>,  2.1); <span class="comment">//write data into XML attributes</span></div>
+<div class="line">out[<span class="stringliteral">"elem"</span>].attribute(<span class="stringliteral">"attr3"</span>, <span class="keyword">true</span>); <span class="comment">//</span></div>
+<div class="line"></div>
+<div class="line"><a class="code" href="namespacezen.html#adeeb6b2318097382ae47aa939fc15d4d">save</a>(doc, <span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError</span></div>
+</div><!-- fragment --><p>The resulting XML: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;elem attr1="-1" attr2="2.1" attr3="true"/&gt;
+&lt;/Root&gt;
+</pre><h1><a class="anchor" id="sec_Automatic_conversion_built_in"></a>
+Automatic conversion for built-in arithmetic types</h1>
+<p>All built-in arithmetic types and <code>bool</code> are detected at compile time and a proper conversion is applied. Common conversions for integer-like types such as <code>int</code>, <code>long</code>, <code>long long</code>, ect. as well as floating point types are optimized for maximum performance.</p>
+<div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line"></div>
+<div class="line">out[<span class="stringliteral">"int"</span>]   (-1234);</div>
+<div class="line">out[<span class="stringliteral">"double"</span>](1.23);</div>
+<div class="line">out[<span class="stringliteral">"float"</span>] (4.56f);</div>
+<div class="line">out[<span class="stringliteral">"ulong"</span>] (1234UL);</div>
+<div class="line">out[<span class="stringliteral">"bool"</span>]  (<span class="keyword">false</span>);</div>
+</div><!-- fragment --><p>The resulting XML: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;int&gt;-1234&lt;/int&gt;
+    &lt;double&gt;1.23&lt;/double&gt;
+    &lt;float&gt;4.56&lt;/float&gt;
+    &lt;ulong&gt;1234&lt;/ulong&gt;
+    &lt;bool&gt;false&lt;/bool&gt;
+&lt;/Root&gt;
+</pre><h1><a class="anchor" id="sec_Automatic_conversion_string"></a>
+Automatic conversion for string-like types</h1>
+<p>The document object model of zen::Xml internally stores all names and values as a std::string. Consequently everything that is not a std::string but is "string-like" is UTF-converted into a std::string representation. By default zen::Xml accepts all character arrays like <code>char[]</code>, <code>wchar_t[]</code>, <code>char*</code>, <code>wchar_t*</code>, single characters like <code>char</code>, <code>wchar_t</code>, standard string classes like <code>std::string</code>, <code>std::wstring</code> and user-defined string classes. If the input string is based on <code>char</code>, it will simply be copied and thereby preserves any local encodings. If the input string is based on <code>wchar_t</code> it will be converted to an UTF-8 encoded <code>std::string</code>. The correct <code>wchar_t</code> encoding of the system will be detected at compile time, for example UTF-16 on Windows, UTF-32 on most Linux distributions.</p>
+<p><b>Note:</b> User-defined string classes are automatically supported if they fulfill the following <b>string concept</b> by defining:</p><ol type="1">
+<li>A typedef named <code>value_type</code> for the underlying character type: must be <code>char</code> or <code>wchar_t</code> </li>
+<li>A member function <code>c_str()</code> returning something that can be converted into a <code>const value_type*</code></li>
+<li>A member function <code>length()</code> returning the number of characters returned by <code>c_str()</code></li>
+</ol>
+<div class="fragment"><div class="line">std::string  elem1 = <span class="stringliteral">"elemento1"</span>;</div>
+<div class="line">std::wstring elem2 = L<span class="stringliteral">"элемент2"</span>;</div>
+<div class="line">wxString     elem3 = L<span class="stringliteral">"要素3"</span>;</div>
+<div class="line">MyString     elem4 = L<span class="stringliteral">"στοιχείο4"</span>;</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line"></div>
+<div class="line">out[<span class="stringliteral">"string"</span>]    (elem1);</div>
+<div class="line">out[<span class="stringliteral">"wstring"</span>]   (elem2);</div>
+<div class="line">out[<span class="stringliteral">"wxString"</span>]  (elem3);</div>
+<div class="line">out[<span class="stringliteral">"MyString"</span>]  (elem4);</div>
+<div class="line">out[<span class="stringliteral">"char[6]"</span>]   (<span class="stringliteral">"elem5"</span>);</div>
+<div class="line">out[<span class="stringliteral">"wchar_t[4]"</span>](L<span class="stringliteral">"元素6"</span>);</div>
+<div class="line">out[<span class="stringliteral">"wchar_t"</span>]   (L<span class="stringliteral">'元'</span>);</div>
+<div class="line">out[<span class="stringliteral">"char"</span>]      (<span class="charliteral">'z'</span>);</div>
+</div><!-- fragment --><p>The resulting XML: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;string&gt;elemento1&lt;/string&gt;
+    &lt;wstring&gt;элемент2&lt;/wstring&gt;
+    &lt;wxString&gt;要素3&lt;/wxString&gt;
+    &lt;MyString&gt;στοιχείο4&lt;/MyString&gt;
+    &lt;char[6]&gt;elem5&lt;/char[6]&gt;
+    &lt;wchar_t[4]&gt;元素6&lt;/wchar_t[4]&gt;
+    &lt;wchar_t&gt;元&lt;/wchar_t&gt;
+    &lt;char&gt;z&lt;/char&gt;
+&lt;/Root&gt;
+</pre><h1><a class="anchor" id="sec_Automatic_conversion_STL"></a>
+Automatic conversion for STL container types</h1>
+<ul>
+<li>User-defined STL compatible types are automatically supported if they fulfill the following <b>container concept</b> by defining:<ol type="1">
+<li>A typedef named <code>value_type</code> for the underlying element type of the container</li>
+<li>A typedef named <code>iterator</code> for a non-const iterator into the container</li>
+<li>A typedef named <code>const_iterator</code> for a const iterator into the container <br>
+<br>
+</li>
+<li>A member function <code>begin()</code> returning an iterator pointing to the first element in the container</li>
+<li>A member function <code>end()</code> returning an iterator pointing just after the last element in the container</li>
+<li>A member function <code>insert()</code> with the signature <code>iterator insert(iterator position, const value_type&amp; x)</code></li>
+<li>A member function <code>clear()</code> removing all elements from the container</li>
+</ol>
+</li>
+<li>In order to support combinations of user types and STL containers such as <code>std::vector&lt;MyType&gt;</code> or <code>std::vector&lt;std::list&lt;MyType&gt;&gt;</code> it is sufficient to only integrate <code>MyType</code> into zen::Xml. <br>
+See <a class="el" href="index.html#sec_Support_user_defined">Support for user-defined types</a></li>
+</ul>
+<div class="fragment"><div class="line">std::deque   &lt;float&gt;         testDeque;</div>
+<div class="line">std::list    &lt;size_t&gt;        testList;</div>
+<div class="line">std::map     &lt;double, char&gt;  testMap;</div>
+<div class="line">std::multimap&lt;short, double&gt; testMultiMap;</div>
+<div class="line">std::set     &lt;int&gt;           testSet;</div>
+<div class="line">std::multiset&lt;std::string&gt;   testMultiSet;</div>
+<div class="line">std::vector  &lt;wchar_t&gt;       testVector;</div>
+<div class="line">std::vector  &lt;std::list&lt;wchar_t&gt;&gt; testVectorList;</div>
+<div class="line">std::pair    &lt;char, wchar_t&gt; testPair;</div>
+<div class="line"></div>
+<div class="line"><span class="comment">/* fill container */</span></div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line"></div>
+<div class="line">out[<span class="stringliteral">"deque"</span>]    (testDeque);</div>
+<div class="line">out[<span class="stringliteral">"list"</span>]     (testList);</div>
+<div class="line">out[<span class="stringliteral">"map"</span>]      (testMap);</div>
+<div class="line">out[<span class="stringliteral">"multimap"</span>] (testMultiMap);</div>
+<div class="line">out[<span class="stringliteral">"set"</span>]      (testSet);</div>
+<div class="line">out[<span class="stringliteral">"multiset"</span>] (testMultiSet);</div>
+<div class="line">out[<span class="stringliteral">"vector"</span>]   (testVector);</div>
+<div class="line">out[<span class="stringliteral">"vect_list"</span>](testVectorList);</div>
+<div class="line">out[<span class="stringliteral">"pair"</span> ]    (testPair);</div>
+</div><!-- fragment --><p>The resulting XML: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;deque&gt;
+        &lt;Item&gt;1.234&lt;/Item&gt;
+        &lt;Item&gt;5.678&lt;/Item&gt;
+    &lt;/deque&gt;
+    &lt;list&gt;
+        &lt;Item&gt;1&lt;/Item&gt;
+        &lt;Item&gt;2&lt;/Item&gt;
+    &lt;/list&gt;
+    &lt;map&gt;
+        &lt;Item&gt;
+            &lt;one&gt;1.1&lt;/one&gt;
+            &lt;two&gt;a&lt;/two&gt;
+        &lt;/Item&gt;
+        &lt;Item&gt;
+            &lt;one&gt;2.2&lt;/one&gt;
+            &lt;two&gt;b&lt;/two&gt;
+        &lt;/Item&gt;
+    &lt;/map&gt;
+    &lt;multimap&gt;
+        &lt;Item&gt;
+            &lt;one&gt;3&lt;/one&gt;
+            &lt;two&gt;99&lt;/two&gt;
+        &lt;/Item&gt;
+        &lt;Item&gt;
+            &lt;one&gt;3&lt;/one&gt;
+            &lt;two&gt;100&lt;/two&gt;
+        &lt;/Item&gt;
+        &lt;Item&gt;
+            &lt;one&gt;4&lt;/one&gt;
+            &lt;two&gt;101&lt;/two&gt;
+        &lt;/Item&gt;
+    &lt;/multimap&gt;
+    &lt;set&gt;
+        &lt;Item&gt;1&lt;/Item&gt;
+        &lt;Item&gt;2&lt;/Item&gt;
+    &lt;/set&gt;
+    &lt;multiset&gt;
+        &lt;Item&gt;1&lt;/Item&gt;
+        &lt;Item&gt;1&lt;/Item&gt;
+        &lt;Item&gt;2&lt;/Item&gt;
+    &lt;/multiset&gt;
+    &lt;vector&gt;
+        &lt;Item&gt;Ä&lt;/Item&gt;
+        &lt;Item&gt;Ö&lt;/Item&gt;
+    &lt;/vector&gt;
+    &lt;vect_list&gt;
+        &lt;Item&gt;
+            &lt;Item&gt;ä&lt;/Item&gt;
+            &lt;Item&gt;ö&lt;/Item&gt;
+            &lt;Item&gt;ü&lt;/Item&gt;
+        &lt;/Item&gt;
+        &lt;Item&gt;
+            &lt;Item&gt;ä&lt;/Item&gt;
+            &lt;Item&gt;ö&lt;/Item&gt;
+            &lt;Item&gt;ü&lt;/Item&gt;
+        &lt;/Item&gt;
+    &lt;/vect_list&gt;
+    &lt;pair&gt;
+        &lt;one&gt;a&lt;/one&gt;
+        &lt;two&gt;â&lt;/two&gt;
+    &lt;/pair&gt;
+&lt;/Root&gt;
+</pre><h1><a class="anchor" id="sec_Support_user_defined"></a>
+Support for user-defined types</h1>
+<p>User types can be integrated into zen::Xml by providing specializations of <a class="el" href="namespacezen.html#acaf85ab94b61882f957afcd355386bff" title="Convert text to user data - used by XML elements and attributes. ">zen::readText()</a> and <a class="el" href="namespacezen.html#a2ce2998296871fc2f4718ceceb22a23f" title="Convert user data into text - used by XML elements and attributes. ">zen::writeText()</a> or <a class="el" href="namespacezen.html#a2bdcecfe7435ef11cedbce47d4e72ee1" title="Convert XML element to structured user data. ">zen::readStruc()</a> and <a class="el" href="namespacezen.html#a29ddb823fe0a195f19a64448881b8bf6" title="Convert structured user data into an XML element. ">zen::writeStruc()</a>. The first pair should be used for all non-structured types that can be represented as a simple text string. This specialization is then used to convert the type to XML elements and XML attributes. The second pair should be specialized for structured types that require an XML representation as a hierarchy of elements. This specialization is used when converting the type to XML elements only. <br>
+<br>
+See section <a class="el" href="index.html#sec_Type_Safety">Type Safety</a> for a discussion of type categories. <br>
+<br>
+<b>Example: Specialization for an enum type</b> </p><div class="fragment"><div class="line"><span class="keyword">enum</span> UnitTime</div>
+<div class="line">{</div>
+<div class="line">    UNIT_SECOND,</div>
+<div class="line">    UNIT_MINUTE,</div>
+<div class="line">    UNIT_HOUR</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">inline</span></div>
+<div class="line"><span class="keywordtype">void</span> <a class="code" href="namespacezen.html#a2ce2998296871fc2f4718ceceb22a23f">zen::writeText</a>(<span class="keyword">const</span> UnitTime&amp; value, std::string&amp; output)</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordflow">switch</span> (value)</div>
+<div class="line">    {</div>
+<div class="line">        <span class="keywordflow">case</span> UNIT_SECOND: output = <span class="stringliteral">"second"</span>; <span class="keywordflow">break</span>;</div>
+<div class="line">        <span class="keywordflow">case</span> UNIT_MINUTE: output = <span class="stringliteral">"minute"</span>; <span class="keywordflow">break</span>;</div>
+<div class="line">        <span class="keywordflow">case</span> UNIT_HOUR:   output = <span class="stringliteral">"hour"</span>  ; <span class="keywordflow">break</span>;</div>
+<div class="line">    }</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">inline</span></div>
+<div class="line"><span class="keywordtype">bool</span> <a class="code" href="namespacezen.html#acaf85ab94b61882f957afcd355386bff">zen::readText</a>(<span class="keyword">const</span> std::string&amp; input, UnitTime&amp; value)</div>
+<div class="line">{</div>
+<div class="line">    std::string tmp = input;</div>
+<div class="line">    zen::trim(tmp);</div>
+<div class="line">    <span class="keywordflow">if</span> (tmp == <span class="stringliteral">"second"</span>)</div>
+<div class="line">        value = UNIT_SECOND;</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span> (tmp == <span class="stringliteral">"minute"</span>)</div>
+<div class="line">        value = UNIT_MINUTE;</div>
+<div class="line">    <span class="keywordflow">else</span> <span class="keywordflow">if</span> (tmp == <span class="stringliteral">"hour"</span>)</div>
+<div class="line">        value = UNIT_HOUR;</div>
+<div class="line">    <span class="keywordflow">else</span></div>
+<div class="line">        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p><b>Example: Brute-force specialization for an enum type</b> </p><div class="fragment"><div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">inline</span></div>
+<div class="line"><span class="keywordtype">void</span> <a class="code" href="namespacezen.html#a2ce2998296871fc2f4718ceceb22a23f">zen::writeText</a>(<span class="keyword">const</span> EnumType&amp; value, std::string&amp; output)</div>
+<div class="line">{</div>
+<div class="line">    output = zen::numberTo&lt;std::string&gt;(<span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(value)); <span class="comment">//treat enum like an integer</span></div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">inline</span></div>
+<div class="line"><span class="keywordtype">bool</span> <a class="code" href="namespacezen.html#acaf85ab94b61882f957afcd355386bff">zen::readText</a>(<span class="keyword">const</span> std::string&amp; input, EnumType&amp; value)</div>
+<div class="line">{</div>
+<div class="line">    value = <span class="keyword">static_cast&lt;</span>EnumType<span class="keyword">&gt;</span>(zen::stringTo&lt;int&gt;(input)); <span class="comment">//treat enum like an integer</span></div>
+<div class="line">    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line">}</div>
+</div><!-- fragment --><p><b>Example: Specialization for a structured user type</b> </p><div class="fragment"><div class="line"><span class="keyword">struct </span>Config</div>
+<div class="line">{</div>
+<div class="line">    <span class="keywordtype">int</span> a;</div>
+<div class="line">    std::wstring b;</div>
+<div class="line">};</div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">inline</span></div>
+<div class="line"><span class="keywordtype">void</span> <a class="code" href="namespacezen.html#a29ddb823fe0a195f19a64448881b8bf6">zen::writeStruc</a>(<span class="keyword">const</span> Config&amp; value, XmlElement&amp; output)</div>
+<div class="line">{</div>
+<div class="line">    XmlOut out(output);</div>
+<div class="line">    out[<span class="stringliteral">"number"</span> ](value.a);</div>
+<div class="line">    out[<span class="stringliteral">"address"</span>](value.b);</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="keyword">template</span> &lt;&gt; <span class="keyword">inline</span></div>
+<div class="line"><span class="keywordtype">bool</span> <a class="code" href="namespacezen.html#a2bdcecfe7435ef11cedbce47d4e72ee1">zen::readStruc</a>(<span class="keyword">const</span> XmlElement&amp; input, Config&amp; value)</div>
+<div class="line">{</div>
+<div class="line">    XmlIn in(input);</div>
+<div class="line">    <span class="keywordtype">bool</span> rv1 = in[<span class="stringliteral">"number"</span> ](value.a);</div>
+<div class="line">    <span class="keywordtype">bool</span> rv2 = in[<span class="stringliteral">"address"</span>](value.b);</div>
+<div class="line">    <span class="keywordflow">return</span> rv1 &amp;&amp; rv2;</div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">int</span> main()</div>
+<div class="line">{</div>
+<div class="line">    Config cfg = { 2,  L<span class="stringliteral">"Abc 3"</span> };</div>
+<div class="line"></div>
+<div class="line">    std::vector&lt;Config&gt; cfgList;</div>
+<div class="line">    cfgList.push_back(cfg);</div>
+<div class="line"></div>
+<div class="line">    <a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc;</div>
+<div class="line">    <a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc); <span class="comment">//write to Xml via output proxy</span></div>
+<div class="line">    out[<span class="stringliteral">"config"</span>](cfgList);</div>
+<div class="line">    <a class="code" href="namespacezen.html#adeeb6b2318097382ae47aa939fc15d4d">save</a>(doc, <span class="stringliteral">"file.xml"</span>); <span class="comment">//throw XmlFileError</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><p>The resulting XML: </p><pre class="fragment">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Root&gt;
+    &lt;config&gt;
+        &lt;Item&gt;
+            &lt;number&gt;2&lt;/number&gt;
+            &lt;address&gt;Abc 3&lt;/address&gt;
+        &lt;/Item&gt;
+    &lt;/config&gt;
+&lt;/Root&gt;
+</pre><h1><a class="anchor" id="sec_Structured_user_types"></a>
+Structured user types</h1>
+<p>Although it is possible to enable conversion of structured user types by specializing <a class="el" href="namespacezen.html#a2bdcecfe7435ef11cedbce47d4e72ee1" title="Convert XML element to structured user data. ">zen::readStruc()</a> and <a class="el" href="namespacezen.html#a29ddb823fe0a195f19a64448881b8bf6" title="Convert structured user data into an XML element. ">zen::writeStruc()</a> (see <a class="el" href="index.html#sec_Support_user_defined">Support for user-defined types</a>), this approach has one drawback: If a mapping error occurs when converting an XML element to structured user data, for example a child-element is missing, the input proxy class <a class="el" href="classzen_1_1_xml_in.html" title="Proxy class to conveniently convert XML structure to user data. ">zen::XmlIn</a> is only able to detect that the whole conversion failed. It cannot say which child-elements in particular failed to convert. <br>
+<br>
+Therefore it may be appropriate to convert structured types by calling subroutines in order to enable fine-granular logging:</p>
+<div class="fragment"><div class="line"><span class="keywordtype">void</span> readConfig(<span class="keyword">const</span> <a class="code" href="classzen_1_1_xml_in.html">zen::XmlIn</a>&amp; in, Config&amp; cfg)</div>
+<div class="line">{</div>
+<div class="line">    in[<span class="stringliteral">"number"</span> ](value.a); <span class="comment">//failed conversions will now be logged for each single item by XmlIn</span></div>
+<div class="line">    in[<span class="stringliteral">"address"</span>](value.b); <span class="comment">//instead of only once for the complete Config type!</span></div>
+<div class="line">}</div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"><span class="keywordtype">void</span> loadConfig(<span class="keyword">const</span> wxString&amp; filename, Config&amp; cfg)</div>
+<div class="line">{</div>
+<div class="line">    <a class="code" href="classzen_1_1_xml_doc.html">zen::XmlDoc</a> doc; <span class="comment">//empty XML document</span></div>
+<div class="line"></div>
+<div class="line">    <span class="keywordflow">try</span></div>
+<div class="line">    {</div>
+<div class="line">        <a class="code" href="namespacezen.html#a872a48c0616e7f12ae8caca464835e00">load</a>(filename, doc); <span class="comment">//throw XmlFileError, XmlParsingError</span></div>
+<div class="line">    }</div>
+<div class="line">    <span class="keywordflow">catch</span> (<span class="keyword">const</span> <a class="code" href="structzen_1_1_xml_error.html">zen::XmlError</a>&amp; e) { <span class="comment">/* handle error */</span> }</div>
+<div class="line"></div>
+<div class="line">    <a class="code" href="classzen_1_1_xml_in.html">zen::XmlIn</a> in(doc); </div>
+<div class="line"> </div>
+<div class="line">    <a class="code" href="classzen_1_1_xml_in.html">zen::XmlIn</a> inConfig = in[<span class="stringliteral">"config"</span>]; <span class="comment">//get input proxy for child element "config"</span></div>
+<div class="line">  </div>
+<div class="line">    readConfig(inConfig, cfg); <span class="comment">//map child element to user data by calling subroutine</span></div>
+<div class="line"></div>
+<div class="line">    <span class="comment">//check for mapping errors: errors occuring in subroutines are considered, too!</span></div>
+<div class="line">    <span class="keywordflow">if</span> (in.errorsOccured())</div>
+<div class="line">       <span class="comment">/* show mapping errors */</span></div>
+<div class="line">}</div>
+</div><!-- fragment --><h1><a class="anchor" id="sec_Type_Safety"></a>
+Type Safety</h1>
+<p>zen::Xml heavily uses methods of compile-time introspection in order to free the user from managing basic type conversions by himself. Thereby it is important to find the right balance between automatic conversions and type safety so that program correctness is not compromised. In the context of XML processing three fundamental type categories can be recognized:</p>
+<ul>
+<li><b>string-like types</b>: <code>std::string, wchar_t*, char[], wchar_t, wxString, MyStringClass, ...</code></li>
+<li><b>to-string-convertible types</b>: any string-like type, all built-in arithmetic numbers, <code>bool</code></li>
+<li><b>structured types</b>: any to-string-convertible type, STL containers, <code>std::pair</code>, structured user types</li>
+</ul>
+<p>These categories can be seen as a sequence of inclusive sets: </p><pre class="fragment">-----------------------------
+| structured                |  Used as: XML element value
+| ------------------------- |           Conversion via: readStruc(), writeStruc() - may be specialized for user-defined types!
+| | to-string-convertible | |  Used as: XML element/attribute value
+| | ---------------       | |           Conversion via: readText(), writeText() - may be specialized for user-defined types!
+| | | string-like |       | |  Used as: XML element/attribute value or element name
+| | ---------------       | |           Conversion via: utfCvrtTo&lt;&gt;()
+| ------------------------- |
+-----------------------------
+</pre><p>A practical implication of this design is that conversions that do not make sense in a particular context simply lead to compile-time errors: </p><div class="fragment"><div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line">out[L<span class="charliteral">'Z'</span>](someValue); <span class="comment">//fine: a wchar_t is acceptable as an element name</span></div>
+<div class="line">out[1234](someValue); <span class="comment">//compiler error: an integer is NOT "string-like"!</span></div>
+</div><!-- fragment --><p> <br>
+</p><div class="fragment"><div class="line"><span class="keywordtype">int</span> i = 0;</div>
+<div class="line">std::vector&lt;int&gt; v;</div>
+<div class="line"></div>
+<div class="line"><a class="code" href="classzen_1_1_xml_out.html">zen::XmlOut</a> out(doc);</div>
+<div class="line">out[<span class="stringliteral">"elem1"</span>](i); <span class="comment">//fine: both i and v can be converted to an XML element</span></div>
+<div class="line">out[<span class="stringliteral">"elem2"</span>](v); <span class="comment">//</span></div>
+<div class="line"></div>
+<div class="line">out[<span class="stringliteral">"elem"</span>].attribute(<span class="stringliteral">"attr1"</span>, i); <span class="comment">//fine: an integer can be converted to an XML attribute</span></div>
+<div class="line">out[<span class="stringliteral">"elem"</span>].attribute(<span class="stringliteral">"attr2"</span>, v); <span class="comment">//compiler error: a std::vector&lt;int&gt; is NOT "to-string-convertible"!</span></div>
+</div><!-- fragment --><dl class="section author"><dt>Author</dt><dd><b>Zenju</b> <br>
+<br>
+ <b>Email:</b> zenju AT freefilesync DOT org </dd></dl>
+</div></div>
