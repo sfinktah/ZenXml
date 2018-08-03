@@ -13,7 +13,7 @@
 #include <memory>
 #include <algorithm>
 #include "type_tools.h"
-#include "build_info.h"
+// #include "build_info.h"
 
 
 //enhancements for <algorithm>

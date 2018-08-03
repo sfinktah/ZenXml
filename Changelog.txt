@@ -1,3 +1,8 @@
+zen::Xml 2.4.1 [2018-08-03]
+-------------------------
+fixed getAttribute function to accept <element attribute="my quote's">
+or <element attribute='my "quote"'>
+
 zen::Xml 2.4 [2016-12-05]
 -------------------------
 zen library update

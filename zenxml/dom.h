@@ -206,6 +206,23 @@ public:
     */
     std::pair<AttrIter, AttrIter> getAttributes() const { return std::make_pair(attributes.begin(), attributes.end()); }
 
+	// sfink's direct hax
+
+    const std::string& getName() const { return name_; }
+    const std::string& getValue() const { return value_; }
+	const std::map<std::string, std::string>& getAttributeMap() const { return attributes; }
+	std::vector<std::string> attributeNames() const {
+		decltype(attributeNames()) result;
+
+		for (auto i = attributes.begin(); i != attributes.end(); ++i)
+		{
+			auto k = i->first;
+			result.push_back(k);
+		}
+	}
+
+	FixedList<XmlElement>& getChildElements() { return childElements; }
+
     //swap two elements while keeping references to parent.  -> disabled documentation extraction
     void swapSubtree(XmlElement& other)
     {
